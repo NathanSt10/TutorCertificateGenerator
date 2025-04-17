@@ -30,19 +30,29 @@ def create_certificate(certificate, name, directory):
     run.font.bold = True
     run.font.name = "Century Schoolbook"
 
-    path = directory + "/" + name
+    path = os.path.join(directory, name)
     certificate.save(path + ".pptx")
 
 
 def main():
     path = os.getcwd()
-    workbook = openpyxl.load_workbook("Attendance.xlsx")
+    xlsx_path = os.path.join(path, "attendance")
+    xlsx_files = [f for f in os.listdir(xlsx_path) if f.endswith('.xlsx')]
+
+    if len(xlsx_files) == 1:
+        file_path = os.path.join(xlsx_path, xlsx_files[0])
+        workbook = openpyxl.load_workbook(file_path)
+        print(f"Opened: {file_path}")
+    else:
+        print("Error: Expected exactly one .xlsx file in the directory.")
+        exit(1)
 
     for sheet in workbook:
-        if sheet.title == "Finished Level 3": continue
+        if sheet.title == "Finished Level 3":
+            continue
         os.makedirs(sheet.title, exist_ok=True)
-        directory = path + "/" + sheet.title
-        template_name = path + "/templates/" + sheet.title + ".pptx"
+        directory = os.path.join(path, sheet.title)
+        template_name = os.path.join(path, "templates", sheet.title + ".pptx")
         certificate = Presentation(template_name)
         for row in sheet.iter_rows(min_row=2, max_col=1):
             for cell in row:
